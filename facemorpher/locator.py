@@ -14,7 +14,8 @@ DATA_DIR = os.environ.get(
   path.join(path.dirname(path.dirname(path.realpath(__file__))), 'data')
 )
 dlib_detector = dlib.get_frontal_face_detector()
-dlib_predictor = dlib.shape_predictor(path.join(DATA_DIR, 'shape_predictor_68_face_landmarks.dat'))
+# dlib_predictor = dlib.shape_predictor(path.join(DATA_DIR, 'shape_predictor_68_face_landmarks.dat'))
+dlib_predictor = dlib.shape_predictor(DATA_DIR)
 
 def boundary_points(points, width_percent=0.1, height_percent=0.1):
   """ Produce additional boundary points
