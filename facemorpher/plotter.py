@@ -29,7 +29,12 @@ def check_do_save(func):
   return inner
 
 class Plotter(object):
-  def __init__(self, plot=True, rows=0, cols=0, num_images=0, out_folder=None, out_filename=None):
+  def __init__(self, plot=True,
+               rows=0,
+               cols=0,
+               num_images=0,
+               out_folder=None,
+               out_filename=None):
     self.save_counter = 1
     self.plot_counter = 1
     self.do_plot = plot

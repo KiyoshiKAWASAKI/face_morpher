@@ -30,6 +30,8 @@ from docopt import docopt
 import os
 import numpy as np
 import cv2
+import sys
+# from tqdm import tqdm
 
 # from facemorpher import locator
 # from facemorpher import aligner
@@ -44,18 +46,25 @@ import blender
 import plotter
 import videoer
 
+
+
 def verify_args(args):
   if args['--images'] is None:
     valid = os.path.isfile(args['--src']) & os.path.isfile(args['--dest'])
     if not valid:
       print('--src=%s or --dest=%s file does not exist. Double check the supplied paths' % (
         args['--src'], args['--dest']))
-      exit(1)
+      # exit(1)
+      pass
   else:
     valid = os.path.isdir(args['--images'])
     if not valid:
       print('--images=%s is not a valid directory' % args['--images'])
-      exit(1)
+      # exit(1)
+      pass
+
+
+
 
 def load_image_points(path, size):
   img = cv2.imread(path)
@@ -67,12 +76,19 @@ def load_image_points(path, size):
   else:
     return aligner.resize_align(img, points, size)
 
+
+
+
 def load_valid_image_points(imgpaths, size):
   for path in imgpaths:
     img, points = load_image_points(path, size)
     if img is not None:
       print(path)
       yield (img, points)
+
+
+
+
 
 def list_imgpaths(images_folder=None, src_image=None, dest_image=None):
   if images_folder is None:
@@ -84,6 +100,9 @@ def list_imgpaths(images_folder=None, src_image=None, dest_image=None):
          fname.lower().endswith('.png') or
          fname.lower().endswith('.jpeg')):
         yield os.path.join(images_folder, fname)
+
+
+
 
 def morph(src_img, src_points, dest_img, dest_points,
           video, width=500, height=600, num_frames=20, fps=10,
@@ -106,11 +125,15 @@ def morph(src_img, src_points, dest_img, dest_points,
   video.write(src_img, 1)
 
   # Produce morph frames!
+  counter = 0
+
   for percent in np.linspace(1, 0, num=num_frames):
     points = locator.weighted_average_points(src_points, dest_points, percent)
     src_face = warper.warp_image(src_img, src_points, points, size)
     end_face = warper.warp_image(dest_img, dest_points, points, size)
     average_face = blender.weighted_average(src_face, end_face, percent)
+
+    counter += 1
 
     if background in ('transparent', 'average'):
       mask = blender.mask_from_points(average_face.shape[:2], points)
@@ -121,12 +144,16 @@ def morph(src_img, src_points, dest_img, dest_points,
         average_face = blender.overlay_image(average_face, mask, average_background)
 
     plt.plot_one(average_face)
-    plt.save(average_face)
+    plt.save(average_face, filename=out_video + "/morph_img_" + str(counter).zfill(4) + ".jpg")
     video.write(average_face)
 
   plt.plot_one(dest_img)
   video.write(dest_img, stall_frames)
   plt.show()
+
+
+
+
 
 def morpher(imgpaths, width=500, height=600, num_frames=20, fps=10,
             out_frames=None, out_video=None, plot=False, background='black'):
@@ -135,24 +162,69 @@ def morpher(imgpaths, width=500, height=600, num_frames=20, fps=10,
 
   :param imgpaths: array or generator of image paths
   """
-  video = videoer.Video(out_video, fps, width, height)
+  out_video_final = os.path.join(out_video, "result.avi")
+  video = videoer.Video(out_video_final, fps, width, height)
   images_points_gen = load_valid_image_points(imgpaths, (height, width))
   src_img, src_points = next(images_points_gen)
+
   for dest_img, dest_points in images_points_gen:
     morph(src_img, src_points, dest_img, dest_points, video,
           width, height, num_frames, fps, out_frames, out_video, plot, background)
     src_img, src_points = dest_img, dest_points
+
   video.end()
 
-def main():
-  args = docopt(__doc__, version='Face Morpher 1.0')
-  verify_args(args)
 
-  morpher(list_imgpaths(args['--images'], args['--src'], args['--dest']),
-          int(args['--width']), int(args['--height']),
-          int(args['--num']), int(args['--fps']),
-          args['--out_frames'], args['--out_video'],
-          args['--plot'], args['--background'])
+
+
+def main():
+  # Define paths and parameters
+  num_of_morphs = 300
+  data_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+                  "jhuang24/face_morph_data/lfw-deepfunneled"
+  result_save_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+                          "jhuang24/face_morph_data"
+
+  # args = docopt(__doc__, version='Face Morpher 1.0')
+  # verify_args(args)
+
+  # Pipeline for generating face morphs
+  # List all the directories
+  print("Finding directory...")
+  subdirs = os.listdir(data_root_dir)
+  source_sub_dir = subdirs[:num_of_morphs]
+  target_sub_dir = subdirs[num_of_morphs:2*num_of_morphs]
+
+  # Generate morphs one by one
+  # for i in tqdm(range(num_of_morphs)):
+  for i in range(2):
+    one_source_img = data_root_dir + "/" + source_sub_dir[i] + \
+                     "/" + source_sub_dir[i] + "_0001.jpg"
+    one_target_img = data_root_dir + "/" + target_sub_dir[i] + \
+                     "/" + target_sub_dir[i] + "_0001.jpg"
+
+    print("Source Image: ", one_source_img)
+    print("Target Image: ", one_target_img)
+
+    target_save_dir = result_save_root_dir + "/" + source_sub_dir[i] + "_to_" + target_sub_dir[i]
+
+    if not os.path.isdir(target_save_dir):
+      os.mkdir(target_save_dir)
+      print("Making directory: ", target_save_dir)
+
+    morpher(imgpaths=list_imgpaths(None,
+                          one_source_img,
+                          one_target_img),
+            width=int(500),
+            height=int(600),
+            num_frames=int(150),
+            fps=int(30),
+            out_frames=None,
+            out_video=target_save_dir,
+            plot=False,
+            background="black")
+
+    print("Finished generating one morph.")
 
 
 if __name__ == "__main__":
