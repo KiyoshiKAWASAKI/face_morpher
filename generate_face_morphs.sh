@@ -2,10 +2,9 @@
 
 #$ -M jhuang24@nd.edu
 #$ -m abe
-#$ -q gpu -l gpu=1
-#$ -l h=!qa-a10-005&!qa-rtx6k-044&!qa-a10-006
+#$ -q long
 #$ -e errors/
-#$ -N
+#$ -N face_morph_300
 
 # Required modules
 module load conda

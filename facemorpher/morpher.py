@@ -31,6 +31,7 @@ import os
 import numpy as np
 import cv2
 import sys
+from PIL import Image
 # from tqdm import tqdm
 
 # from facemorpher import locator
@@ -132,6 +133,7 @@ def morph(src_img, src_points, dest_img, dest_points,
     src_face = warper.warp_image(src_img, src_points, points, size)
     end_face = warper.warp_image(dest_img, dest_points, points, size)
     average_face = blender.weighted_average(src_face, end_face, percent)
+    # print(average_face.shape)
 
     counter += 1
 
@@ -144,7 +146,9 @@ def morph(src_img, src_points, dest_img, dest_points,
         average_face = blender.overlay_image(average_face, mask, average_background)
 
     plt.plot_one(average_face)
-    plt.save(average_face, filename=out_video + "/morph_img_" + str(counter).zfill(4) + ".jpg")
+    cv2.imwrite(out_video + "/morph_img_" + str(counter).zfill(4) + ".jpg", average_face)
+
+
     video.write(average_face)
 
   plt.plot_one(dest_img)
@@ -179,11 +183,12 @@ def morpher(imgpaths, width=500, height=600, num_frames=20, fps=10,
 
 def main():
   # Define paths and parameters
-  num_of_morphs = 300
+  num_of_morphs_used = 300
+  num_of_morphs = 10
   data_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
                   "jhuang24/face_morph_data/lfw-deepfunneled"
   result_save_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
-                          "jhuang24/face_morph_data"
+                          "jhuang24/face_morph_data/face_morph_293_plus"
 
   # args = docopt(__doc__, version='Face Morpher 1.0')
   # verify_args(args)
@@ -192,12 +197,11 @@ def main():
   # List all the directories
   print("Finding directory...")
   subdirs = os.listdir(data_root_dir)
-  source_sub_dir = subdirs[:num_of_morphs]
-  target_sub_dir = subdirs[num_of_morphs:2*num_of_morphs]
+  source_sub_dir = subdirs[600:610]
+  target_sub_dir = subdirs[610:620]
 
   # Generate morphs one by one
-  # for i in tqdm(range(num_of_morphs)):
-  for i in range(2):
+  for i in range(num_of_morphs):
     one_source_img = data_root_dir + "/" + source_sub_dir[i] + \
                      "/" + source_sub_dir[i] + "_0001.jpg"
     one_target_img = data_root_dir + "/" + target_sub_dir[i] + \
