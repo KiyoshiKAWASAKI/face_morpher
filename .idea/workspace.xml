@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="51b5b5a3-ce71-4a55-894f-32dc08e42989" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/facemorpher/morpher.py" beforeDir="false" afterPath="$PROJECT_DIR$/facemorpher/morpher.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate_face_morphs.sh" beforeDir="false" afterPath="$PROJECT_DIR$/generate_face_morphs.sh" afterDir="false" />
-    </list>
+    <list default="true" id="51b5b5a3-ce71-4a55-894f-32dc08e42989" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -212,12 +208,12 @@
       <workItem from="1677450527945" duration="595000" />
       <workItem from="1677521378380" duration="12105000" />
       <workItem from="1677961229472" duration="38000" />
-      <workItem from="1686154603223" duration="1690000" />
+      <workItem from="1686154603223" duration="2737000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="14895000" />
+    <option name="totallyTimeSpent" value="15942000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1080" extended-state="0" />
