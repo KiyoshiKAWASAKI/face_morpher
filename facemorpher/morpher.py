@@ -32,6 +32,7 @@ import numpy as np
 import cv2
 import sys
 from PIL import Image
+import glob
 # from tqdm import tqdm
 
 # from facemorpher import locator
@@ -145,15 +146,15 @@ def morph(src_img, src_points, dest_img, dest_points,
         average_background = blender.weighted_average(src_img, dest_img, percent)
         average_face = blender.overlay_image(average_face, mask, average_background)
 
-    plt.plot_one(average_face)
+    # plt.plot_one(average_face)
     cv2.imwrite(out_video + "/morph_img_" + str(counter).zfill(4) + ".jpg", average_face)
 
 
     video.write(average_face)
 
-  plt.plot_one(dest_img)
+  # plt.plot_one(dest_img)
   video.write(dest_img, stall_frames)
-  plt.show()
+  # plt.show()
 
 
 
@@ -183,52 +184,56 @@ def morpher(imgpaths, width=500, height=600, num_frames=20, fps=10,
 
 def main():
   # Define paths and parameters
-  num_of_morphs_used = 300
-  num_of_morphs = 10
-  data_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
-                  "jhuang24/face_morph_data/lfw-deepfunneled"
-  result_save_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
-                          "jhuang24/face_morph_data/face_morph_293_plus"
+  data_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/face_morph_v4_funneled"
+  result_save_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/face_morph_v4_funneled_morphs"
 
-  # args = docopt(__doc__, version='Face Morpher 1.0')
-  # verify_args(args)
+  all_category = glob.glob(os.path.join(data_root_dir, '*'))
+  print(all_category)
 
-  # Pipeline for generating face morphs
-  # List all the directories
-  print("Finding directory...")
-  subdirs = os.listdir(data_root_dir)
-  source_sub_dir = subdirs[600:610]
-  target_sub_dir = subdirs[610:620]
+  # Loop through each category
+  for one_cate in all_category:
+      category_name = one_cate.split("/")[-1]
 
-  # Generate morphs one by one
-  for i in range(num_of_morphs):
-    one_source_img = data_root_dir + "/" + source_sub_dir[i] + \
-                     "/" + source_sub_dir[i] + "_0001.jpg"
-    one_target_img = data_root_dir + "/" + target_sub_dir[i] + \
-                     "/" + target_sub_dir[i] + "_0001.jpg"
+      all_people = glob.glob(os.path.join(one_cate, '*'))
+      nb_morphs = int(len(all_people)/2)
 
-    print("Source Image: ", one_source_img)
-    print("Target Image: ", one_target_img)
+      print("Current category: ", category_name)
+      print("Number of morphs: ", nb_morphs)
 
-    target_save_dir = result_save_root_dir + "/" + source_sub_dir[i] + "_to_" + target_sub_dir[i]
+      for i in range(nb_morphs):
 
-    if not os.path.isdir(target_save_dir):
-      os.mkdir(target_save_dir)
-      print("Making directory: ", target_save_dir)
+          source_dir = all_people[i]
+          target_dir = all_people[i + nb_morphs]
 
-    morpher(imgpaths=list_imgpaths(None,
-                          one_source_img,
-                          one_target_img),
-            width=int(500),
-            height=int(600),
-            num_frames=int(150),
-            fps=int(30),
-            out_frames=None,
-            out_video=target_save_dir,
-            plot=False,
-            background="black")
+          print(source_dir, target_dir)
 
-    print("Finished generating one morph.")
+          # Generate morphs one by one
+          one_source_img = glob.glob(os.path.join(source_dir, '*'))[0]
+          one_target_img = glob.glob(os.path.join(target_dir, '*'))[0]
+
+          print("Source Image: ", one_source_img)
+          print("Target Image: ", one_target_img)
+
+          target_save_dir = result_save_root_dir + "/" + category_name + "/" + \
+                            source_dir.split("/")[-1] + "_to_" + target_dir.split("/")[-1]
+
+          if not os.path.isdir(target_save_dir):
+            os.mkdir(target_save_dir)
+            print("Making directory: ", target_save_dir)
+
+          morpher(imgpaths=list_imgpaths(None,
+                                  one_source_img,
+                                  one_target_img),
+                    width=int(500),
+                    height=int(600),
+                    num_frames=int(150),
+                    fps=int(30),
+                    out_frames=None,
+                    out_video=target_save_dir,
+                    plot=False,
+                    background="black")
+
+          print("Finished generating one morph.")
 
 
 if __name__ == "__main__":

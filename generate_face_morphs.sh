@@ -4,7 +4,7 @@
 #$ -m abe
 #$ -q long
 #$ -e errors/
-#$ -N face_morph_300
+#$ -N face_morph_380
 
 # Required modules
 module load conda
